@@ -1,78 +1,49 @@
 import tkinter as tk
 from abc import ABC, abstractmethod
 from functools import partial
-from random import randint
-from typing import Tuple, Callable
+from typing import Callable
 
 BG_COLOR: str = "steelblue"
 FONT: str = "Courrier"
 FONT_COLOR: str = "white"
-MAX_QUESTIONS: int = 10
 
 
-class Operation(ABC):
-    @property
-    @abstractmethod
-    def operator(self):
-        """"""
-
-    @abstractmethod
-    def get_operands(self):
-        """"""
-
-    @abstractmethod
-    def get_result(self, operand_1: int, operand_2: int):
-        """"""
-
-
-class Addition(Operation):
-    operator: str = "+"
-
-    def get_operands(self):
-        return randint(1, 99), randint(1, 99)
-
-    def get_result(self, operand_1: int, operand_2: int):
-        return operand_1 + operand_2
-
-
-class Multiplication(Operation):
-    operator: str = "X"
-
-    def get_operands(self):
-        return randint(2, 9), randint(2, 9)
-
-    def get_result(self, operand_1: int, operand_2: int):
-        return operand_1 * operand_2
-
-
-class TkView(ABC):
+class View(ABC):
+    """Abstract view to interact with the program"""
     @property
     @abstractmethod
     def controller(self):
-        """"""
+        """Must be of type 'Controller'"""
 
     @abstractmethod
     def init_setup(self, controller):
-        """"""
+        """initializes the view by the controller. must display main menu"""
 
     @abstractmethod
     def display_main_menu(self):
-        """"""
+        """a main menu with a choice of tests to run"""
 
     @abstractmethod
     def display_question(self, err_msg: str = None):
-        """"""
+        """
+        An operation displayed by a text and an entry to collect the answer.
+        """
 
     @abstractmethod
     def display_result(self, text_result: str):
-        """"""
+        """
+        Displays the correct/wrong result as text.
+        """
 
     @abstractmethod
     def display_results_summary(self):
-        """"""
+        """
+        Displays the final score
+        """
 
 
-class ConcreteTkView(TkView):
+class TkView(View):
+    """View using tkinter interface"""
     controller = None
     root: tk.Tk
     current_frame: tk.Frame = None
@@ -82,6 +53,14 @@ class ConcreteTkView(TkView):
         self.root_setup()
         self.display_main_menu()
         self.root.mainloop()
+
+    def root_setup(self):
+        self.root = tk.Tk()
+        self.root.title("Operation Trainer")
+        self.root.geometry("1280x720")
+        self.root.maxsize(1280, 720)
+        self.root.minsize(480, 360)
+        self.root.config(background=BG_COLOR)
 
     def display_main_menu(self):
         main_menu = self.replace_current_frame()
@@ -158,7 +137,7 @@ class ConcreteTkView(TkView):
                               btn_text="Main Menu",
                               command=self.controller.back_to_main_menu)
 
-    def display_result(self, text_result):
+    def display_result(self, text_result: str):
         result_frame = self.replace_current_frame()
         self.implement_progression_label(result_frame)
 
@@ -197,15 +176,10 @@ class ConcreteTkView(TkView):
                               btn_text="Main Menu",
                               command=self.controller.back_to_main_menu)
 
-    def root_setup(self):
-        self.root = tk.Tk()
-        self.root.title("Operation Trainer")
-        self.root.geometry("1280x720")
-        self.root.maxsize(1280, 720)
-        self.root.minsize(480, 360)
-        self.root.config(background=BG_COLOR)
-
     def replace_current_frame(self):
+        """
+        Allows to switch between frames.
+        """
         if self.current_frame:
             self.current_frame.destroy()
         self.current_frame = tk.Frame(self.root, bg=BG_COLOR)
@@ -213,8 +187,9 @@ class ConcreteTkView(TkView):
         return self.current_frame
 
     def implement_progression_label(self, frame: tk.Frame):
+        """Implements the test progression"""
         progress_text = f"Progress: {self.controller.current_question} / " \
-                        f"{MAX_QUESTIONS}"
+                        f"{self.controller.max_questions}"
         progress_label = tk.Label(
             frame,
             text=progress_text,
@@ -228,6 +203,7 @@ class ConcreteTkView(TkView):
     def implement_button(frame: tk.Frame,
                          btn_text: str,
                          command: Callable = None):
+        """Implements buttons with a command"""
         button = tk.Button(
             frame,
             text=btn_text,
@@ -235,68 +211,3 @@ class ConcreteTkView(TkView):
             command=command
         )
         button.pack(expand=True)
-
-
-class Controller:
-    operation: Operation = None
-    current_question: int = 0
-    current_score: int = 0
-    kwargs = dict
-
-    def __init__(self, view: TkView, operations: dict):
-        self.operations = operations
-        self.view = view
-
-    def start(self):
-        self.view.init_setup(self)
-
-    def send_question(self, operation: Operation = None):
-        if operation:
-            self.operation = operation
-        if self.current_question >= MAX_QUESTIONS:
-            self.view.display_results_summary()
-        else:
-            self.kwargs = self.get_operation_kwargs()
-            self.current_question += 1
-            self.view.display_question()
-
-    def get_operation_kwargs(self) -> dict:
-        kwargs = {"operator": self.operation.operator}
-        operand_1, operand_2 = self.operation.get_operands()
-        kwargs["operand 1"] = operand_1
-        kwargs["operand 2"] = operand_2
-        kwargs["result"] = self.operation.get_result(operand_1, operand_2)
-        return kwargs
-
-    def assess_answer(self, user_entry):
-        answer = None
-        try:
-            answer = int(user_entry.get())
-        except ValueError:
-            err_msg = "You must enter an integer"
-            self.view.display_question(err_msg=err_msg)
-        if answer is not None:
-            if answer == self.kwargs["result"]:
-                result_str = f"You answered {answer}. This is correct!"
-                self.current_score += 1
-            else:
-                result_str = f"You answered {answer}. Wrong answer! " \
-                             f"The correct answer was {self.kwargs['result']}"
-            self.view.display_result(result_str)
-
-    def back_to_main_menu(self):
-        self.current_question = 0
-        self.current_score = 0
-        self.view.display_main_menu()
-
-
-if __name__ == "__main__":
-    OPERATIONS = {
-        "Addition": Addition(),
-        "Multiplication": Multiplication()
-    }
-
-    app = Controller(ConcreteTkView(), OPERATIONS)
-    app.start()
-
-
