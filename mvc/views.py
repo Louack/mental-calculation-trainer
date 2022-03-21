@@ -8,7 +8,7 @@ FONT: str = "Courrier"
 FONT_COLOR: str = "white"
 
 
-class View(ABC):
+class AbstractView(ABC):
     """Abstract view to interact with the program"""
     @property
     @abstractmethod
@@ -30,7 +30,7 @@ class View(ABC):
         """
 
     @abstractmethod
-    def display_result(self, text_result: str):
+    def display_result(self, result: bool, answer: int):
         """
         Displays the correct/wrong result as text.
         """
@@ -42,8 +42,8 @@ class View(ABC):
         """
 
 
-class TkView(View):
-    """View using tkinter interface"""
+class TkinterView(AbstractView):
+    """View using tkinter interface. Needs a Tkinter Controller"""
     controller = None
     root: tk.Tk
     current_frame: tk.Frame = None
@@ -120,7 +120,7 @@ class TkView(View):
         self.implement_button(frame=question_frame,
                               btn_text="Send",
                               command=partial(
-                                  self.controller.assess_answer,
+                                  self.controller.capture_user_input,
                                   entry))
 
         if err_msg:
@@ -137,9 +137,16 @@ class TkView(View):
                               btn_text="Main Menu",
                               command=self.controller.back_to_main_menu)
 
-    def display_result(self, text_result: str):
+    def display_result(self, result, answer):
         result_frame = self.replace_current_frame()
         self.implement_progression_label(result_frame)
+
+        if result:
+            text_result = f"You answered {answer}. This is correct!"
+        else:
+            text_result = f"You answered {answer}. Wrong answer! " \
+                          f"The correct answer was " \
+                          f"{self.controller.kwargs['result']}"
 
         result_label = tk.Label(
             result_frame,
@@ -211,3 +218,52 @@ class TkView(View):
             command=command
         )
         button.pack(expand=True)
+
+
+class ConsoleView(AbstractView):
+    """View using console interface. Needs a Console Controller"""
+    controller = None
+
+    def init_setup(self, controller):
+        self.controller = controller
+        self.display_main_menu()
+
+    def display_main_menu(self):
+        print("Welcome to Mental Math Trainer")
+        print("Enter the number associated with the test you want to perform "
+              "or 'EXIT' to quit the program:")
+        for i, name in enumerate(self.controller.operations, 1):
+            print(f"{i} - {name}")
+        user_input = input()
+        self.controller.checks_main_menu_input(user_input)
+
+    def display_question(self, err_msg=None):
+        print(f"Question {self.controller.current_question} / "
+              f"{self.controller.max_questions}")
+        print(f"{self.controller.kwargs['operand 1']} "
+              f"{self.controller.kwargs['operator']} "
+              f"{self.controller.kwargs['operand 2']} ?")
+        print("Enter your answer or 'EXIT' to quit the program:")
+        if err_msg:
+            print(err_msg)
+        user_input = input()
+        self.controller.checks_user_answer(user_input)
+
+    def display_result(self, result, answer):
+        if result:
+            print(f"You answered {answer}. This is correct!")
+        else:
+            print(f"You answered {answer}. Wrong answer! The correct answer "
+                  f"was {self.controller.kwargs['result']}")
+        user_input = input("Press any key to continue or 'EXIT' to quit the "
+                           "program:")
+        print("\n")
+        self.controller.checks_question_navigation(user_input)
+
+    def display_results_summary(self):
+        print(f"Your score: {self.controller.current_score} / "
+              f"{self.controller.current_question}")
+        user_input = input("Press any key to return to the main menu or "
+                           "'EXIT' to quit the program:")
+        print("\n")
+        self.controller.checks_end_of_test_navigation(user_input)

@@ -9,7 +9,7 @@ class Operation(ABC):
     @abstractmethod
     def operator(self) -> str:
         """
-        Defines the operator to be displayed in the text (X, /, + -)
+        Defines the operator to be displayed in the text (X, /, +, -)
         """
 
     @abstractmethod
@@ -28,18 +28,18 @@ class Operation(ABC):
 class Addition(Operation):
     operator: str = "+"
 
-    def get_operands(self) -> Tuple[int, int]:
+    def get_operands(self):
         return randint(1, 99), randint(1, 99)
 
-    def get_result(self, operand_1: int, operand_2: int) -> int:
+    def get_result(self, operand_1, operand_2):
         return operand_1 + operand_2
 
 
 class Multiplication(Operation):
     operator: str = "X"
 
-    def get_operands(self) -> Tuple[int, int]:
+    def get_operands(self):
         return randint(2, 9), randint(2, 9)
 
-    def get_result(self, operand_1: int, operand_2: int) -> int:
+    def get_result(self, operand_1, operand_2):
         return operand_1 * operand_2
