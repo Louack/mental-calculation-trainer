@@ -24,7 +24,7 @@ class ConsoleAppFactory(AppFactory):
         return ConsoleController
 
     def get_view(self):
-        return ConsoleView
+        return ConsoleView()
 
 
 class TkinterAppFactory(AppFactory):
@@ -35,4 +35,4 @@ class TkinterAppFactory(AppFactory):
         return TkinterController
 
     def get_view(self):
-        return TkinterView
+        return TkinterView()
