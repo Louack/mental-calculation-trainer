@@ -72,26 +72,26 @@ class TkControlExt(ABC):
 
 class ConsoleControlExt(ABC):
     @abstractmethod
-    def checks_main_menu_input(self, user_input: str):
+    def check_main_menu_input(self, user_input: str):
         """
         Captures and checks the console main menu input
         """
 
     @abstractmethod
-    def checks_user_answer(self, answer: str):
+    def check_user_answer(self, answer: str):
         """
         Captures and checks the user answer. Needs to be an integer
         """
 
     @abstractmethod
-    def checks_question_navigation(self, user_input: str):
+    def check_question_navigation(self, user_input: str):
         """
         Captures and checks the input needed to navigate towards next question
         or coming back to main menu.
         """
 
     @abstractmethod
-    def checks_end_of_test_navigation(self, user_input: str):
+    def check_end_of_test_navigation(self, user_input: str):
         """
         Captures and checks the input needed to navigate towards the main menu
         or exit the program.
@@ -110,13 +110,9 @@ class BaseController(AbstractController):
         self.max_questions = max_questions
 
     def start(self):
-        """Initializes the view with its main menu"""
         self.view.init_setup(self)
 
     def send_question(self, operation=None):
-        """
-        Send an operation question based on the operation object.
-        """
         if operation:
             self.operation = operation
         if self.current_question >= self.max_questions:
@@ -127,7 +123,6 @@ class BaseController(AbstractController):
             self.view.display_question()
 
     def get_operation_kwargs(self):
-        """Retrieves operands, operator and result from an operation obj"""
         kwargs = {"operator": self.operation.operator}
         operand_1, operand_2 = self.operation.get_operands()
         kwargs["operand 1"] = operand_1
@@ -161,7 +156,7 @@ class TkinterController(BaseController, TkControlExt):
 
 
 class ConsoleController(BaseController, ConsoleControlExt):
-    def checks_main_menu_input(self, user_input):
+    def check_main_menu_input(self, user_input):
         if user_input == "EXIT":
             quit()
         try:
@@ -175,7 +170,7 @@ class ConsoleController(BaseController, ConsoleControlExt):
         else:
             self.view.display_main_menu()
 
-    def checks_user_answer(self, user_input):
+    def check_user_answer(self, user_input):
         if user_input == "EXIT":
             quit()
         try:
@@ -184,12 +179,12 @@ class ConsoleController(BaseController, ConsoleControlExt):
         except ValueError:
             self.view.display_question(err_msg="Integer needed")
 
-    def checks_question_navigation(self, user_input):
+    def check_question_navigation(self, user_input):
         if user_input == "EXIT":
             quit()
         self.send_question()
 
-    def checks_end_of_test_navigation(self, user_input: str):
+    def check_end_of_test_navigation(self, user_input: str):
         if user_input == "EXIT":
             quit()
         self.back_to_main_menu()

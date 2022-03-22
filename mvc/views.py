@@ -17,7 +17,7 @@ class AbstractView(ABC):
 
     @abstractmethod
     def init_setup(self, controller):
-        """initializes the view by the controller. must display main menu"""
+        """initializes the view by the controller. Must display main menu"""
 
     @abstractmethod
     def display_main_menu(self):
@@ -235,7 +235,7 @@ class ConsoleView(AbstractView):
         for i, name in enumerate(self.controller.operations, 1):
             print(f"{i} - {name}")
         user_input = input()
-        self.controller.checks_main_menu_input(user_input)
+        self.controller.check_main_menu_input(user_input)
 
     def display_question(self, err_msg=None):
         print(f"Question {self.controller.current_question} / "
@@ -247,7 +247,7 @@ class ConsoleView(AbstractView):
         if err_msg:
             print(err_msg)
         user_input = input()
-        self.controller.checks_user_answer(user_input)
+        self.controller.check_user_answer(user_input)
 
     def display_result(self, result, answer):
         if result:
@@ -258,7 +258,7 @@ class ConsoleView(AbstractView):
         user_input = input("Press any key to continue or 'EXIT' to quit the "
                            "program:")
         print("\n")
-        self.controller.checks_question_navigation(user_input)
+        self.controller.check_question_navigation(user_input)
 
     def display_results_summary(self):
         print(f"Your score: {self.controller.current_score} / "
@@ -266,4 +266,4 @@ class ConsoleView(AbstractView):
         user_input = input("Press any key to return to the main menu or "
                            "'EXIT' to quit the program:")
         print("\n")
-        self.controller.checks_end_of_test_navigation(user_input)
+        self.controller.check_end_of_test_navigation(user_input)
